@@ -39,12 +39,16 @@ tree=as.Node(jerarquia[,])
 print(tree)
 rm(jerarquia,tree)
 
-# Hacemos una segmentación de clientes RFM. 
+# Hacemos una segmentación de clientes RFM. Recency (No disponible), Frequency (nº de productos) y Monetary(sum)
 
 summary(data)
 
 clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n())
 
+
+
+
+# Hacemos algún plot
 clientes %>% ggplot(aes(y=F, x=M, color=Gender))+ geom_point() + theme_classic()
 
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
