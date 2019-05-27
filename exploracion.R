@@ -49,6 +49,12 @@ clientes %>% ggplot(aes(y=F, x=M, color=Gender))+ geom_point() + theme_classic()
 
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
 
+clientes %>% ggplot(aes(x=M,color=Age)) + geom_density(alpha=0.1, size=1)+ xlim(0,50000) + 
+  scale_x_log10() + scale_color_brewer(palette="Spectral") + theme_classic()
+
+clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()+  scale_y_log10()
+
+
 hist(data$Occupation)
 
 
