@@ -10,10 +10,11 @@ data=data %>% mutate(Gender=as.factor(Gender),
                 Stay_In_Current_City_Years=as.factor(Stay_In_Current_City_Years),
                 City_Category=as.factor(City_Category), 
                 Product_ID=as.factor(Product_ID), 
-                Age=as.factor(Age))
+                Age=as.factor(Age),
+                Marital_Status=as.factor(Marital_Status))
 
-# Comprobamos datos no repetidos
-(nrow(unique(data))==nrow(data))
+# Comprobamos datos no repetidos, la línea inferior da como resultado TRUE
+#(nrow(unique(data))==nrow(data))
 
 # Medimos el número de nulos en cada columna
 nulos=function(x)  mean(is.na(x))
@@ -45,11 +46,16 @@ summary(data)
 
 clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n())
 
+# Tenemos 6000 clientes, les hacemos un scoring de 0 a 10
 
+clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), rankF=rank(F)/length(F))
 
 
 # Hacemos algún plot
 clientes %>% ggplot(aes(y=F, x=M, color=Gender))+ geom_point() + theme_classic()
+
+clientes %>% ggplot(aes(y=rankF, x=rankM))+ geom_point(alpha=0.05) + theme_classic()
+
 
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
 
@@ -58,10 +64,12 @@ clientes %>% ggplot(aes(x=M,color=Age)) + geom_density(alpha=0.1, size=1)+ xlim(
 
 clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()+  scale_y_log10()
 
+# Continuamos con un análisis preliminar
 
-hist(data$Occupation)
+summary(data)
 
 
+# Calculamos los productos que más ventas han tenido
 
 
 
