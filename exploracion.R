@@ -44,17 +44,24 @@ rm(jerarquia,tree)
 
 summary(data)
 
-clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n())
+clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n()) %>% ungroup()
 
 # Tenemos 6000 clientes, les hacemos un scoring de 0 a 10
 
-clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), rankF=rank(F)/length(F))
+clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), rankF=rank(F)/length(F)) %>% 
+  arrange(rankM) %>% mutate(cumM=cumsum(M)) %>% arrange(rankF) %>% mutate(cumF=cumsum(F))
 
 
 # Hacemos algún plot
 clientes %>% ggplot(aes(y=F, x=M, color=Gender))+ geom_point() + theme_classic()
 
 clientes %>% ggplot(aes(y=rankF, x=rankM))+ geom_point(alpha=0.05) + theme_classic()
+
+clientes %>% ggplot(aes(x=rankF, y=cumM, color=Age))+ geom_point(alpha=0.2) + theme_classic()
+
+clientes %>% ggplot(aes(x=rankM, y=cumF))+ geom_point(alpha=0.05) + theme_classic()
+
+clientes %>% ggplot(aes(y=M, x=F))+ geom_point(alpha=0.05) + theme_classic()
 
 
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
@@ -70,7 +77,21 @@ summary(data)
 
 
 # Calculamos los productos que más ventas han tenido
+prod = data %>% group_by(Product_ID) %>% summarize(N=n()) %>% arrange(-N)
+
+hist(prod$N)
 
 
+# Vemos que productos se asocian más a otros productos
 
+# Necesitamos convertir los productos en wide format
+data %>% select(Product_ID) %>% distinct() %>% mutate(value=1) %>% summarize(sum(value)) # Tenemos 3623 productos distintos 
 
+# Creamos una matriz de transacciones para utilizar con arules
+transacciones=data %>% select(User_ID, Product_ID) %>% mutate(value=1) %>% 
+  spread(Product_ID,value,fill=0) %>% select(-User_ID) %>% as.matrix()
+
+# Lo incluimos en arules
+
+# Inspeccionamos qué clientes podrían comprar los 5 primeros productos más comunes juntos y no lo han comprado.
+# Generamos una tabla de datos con recomendaciones 
