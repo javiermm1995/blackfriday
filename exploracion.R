@@ -107,7 +107,21 @@ reglas=eclat(transacciones, parameter=list(support=0.02, minlen=4, target="maxim
 
 (tabla=inspect(reglas) %>% arrange(-support))  # En esta tabla tenemos 4 o más objetos que se han vendido al mismo cliente más de un 10% de clientes
 
+
+
+# Inspeccionamos qué clientes podrían comprar los primeros productos más comunes juntos y no lo han comprado.
+# Generamos una tabla de datos con recomendaciones 
+
+tabla=tabla %>% select(items) %>% mutate(items=as.character(items)) %>% .$items %>% str_replace_all("[{]","\\[") %>%
+  str_replace_all("[}]","\\]") %>% as.data.frame() %>% mutate(items=as.character(.)) %>% select(items) %>% as.vector()
+
+# tabla incluye la expresión regular que hay que aplicar 
 tabla
 
-# Inspeccionamos qué clientes podrían comprar los 5 primeros productos más comunes juntos y no lo han comprado.
-# Generamos una tabla de datos con recomendaciones 
+data %>% str_detect(Product_ID)   summary()
+
+
+
+
+
+
