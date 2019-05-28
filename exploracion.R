@@ -86,10 +86,23 @@ data %>% group_by(User_ID) %>% summarize(N=n()) %>% summary()
 
 
 # Calculamos los productos que más ventas han tenido
-prod = data %>% group_by(Product_ID) %>% summarize(N=n()) %>% arrange(-N)
+prod = data %>% group_by(Product_ID,Precio=Purchase) %>% summarize(N=n()) %>% 
+  ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N) %>% mutate(N=as.factor(N))
+prod
 
 hist(prod$N)
 
+summary(prod)
+
+head(prod)
+
+hist(prod$Ventas)
+
+prod %>% ggplot(aes(x=N, y=Precio)) + geom_boxplot()
+
+prod %>% mutate(N=as.numeric(N)) %>% group_by(N) %>% summarize (total=sum(N*Precio)) %>% 
+  ungroup() %>% ggplot(aes(y=total, x=N)) + geom_bar(stat="identity") #+ scale_y_log10()
+# A pesar de que cada usuario compra aproximadamente 25 cosas, 
 
 # Vemos que productos se asocian más a otros productos
 
@@ -122,8 +135,8 @@ tabla=inspect(reglas) %>% arrange(-support)  # En esta tabla tenemos 4 o más ob
 # Lo hacemos con left join
 
 
-data$
-
+promoaviso=data %>% select(User_ID,Product_ID) %>% left_join(tablas, by=c("Product_ID"="Producto"))
+summary(promoaviso$IndicePromo)
 
 
 
