@@ -122,8 +122,8 @@ tabla=inspect(reglas) %>% arrange(-support)  # En esta tabla tenemos 4 o más ob
 # Lo hacemos con left join
 
 
-data$
-
+promoaviso=data %>% select(User_ID,Product_ID) %>% left_join(tablas, by=c("Product_ID"="Producto"))
+summary(promoaviso$IndicePromo)
 
 
 
