@@ -76,6 +76,15 @@ clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()
 summary(data)
 
 
+# Cuántos productos compra cada cliente? La moda es 25, la media 91, la mediana 53
+
+data %>% group_by(User_ID) %>% summarize(N=n()) %>% ggplot(aes(x=N)) + geom_histogram() + scale_x_log10()
+
+data %>% group_by(User_ID) %>% summarize(N=n()) %>% ggplot(aes(x=N)) + geom_histogram() + xlim(0,100)
+
+data %>% group_by(User_ID) %>% summarize(N=n()) %>% summary()
+
+
 # Calculamos los productos que más ventas han tenido
 prod = data %>% group_by(Product_ID) %>% summarize(N=n()) %>% arrange(-N)
 
@@ -92,6 +101,13 @@ transacciones=data %>% select(User_ID, Product_ID) %>% mutate(value=1) %>%
   spread(Product_ID,value,fill=0) %>% select(-User_ID) %>% as.matrix()
 
 # Lo incluimos en arules
+library(arules)
+reglas=apriori(transacciones, parameter=list(support=0.1,confidence=0.5))
+reglas=eclat(transacciones, parameter=list(support=0.02, minlen=4, target="maximally frequent itemsets", ext=TRUE))
+
+(tabla=inspect(reglas) %>% arrange(-support))  # En esta tabla tenemos 4 o más objetos que se han vendido al mismo cliente más de un 10% de clientes
+
+tabla
 
 # Inspeccionamos qué clientes podrían comprar los 5 primeros productos más comunes juntos y no lo han comprado.
 # Generamos una tabla de datos con recomendaciones 
