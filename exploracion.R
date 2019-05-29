@@ -71,6 +71,12 @@ clientes %>% ggplot(aes(x=M,color=Age)) + geom_density(alpha=0.1, size=1)+ xlim(
 
 clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()+  scale_y_log10()
 
+clientes %>% ggplot(aes(y=cumF/max(cumF), x=rankF))+ geom_point(alpha=0.1)
+
+clientes %>% ggplot(aes(y=cumM/max(cumM), x=rankM))+ geom_point(alpha=0.1)
+
+clientes %>% ggplot(aes(y=cumM, x=rankF))+ geom_point(alpha=0.1)
+
 # Continuamos con un análisis preliminar
 
 summary(data)
@@ -205,8 +211,7 @@ clientespc=clientes %>% cbind(dataplot)
 
 summary(clientespc)
 
-clientespc %>% ggplot(aes(y=cumF, x=rankF, col=PC1))+ geom_point(alpha=0.1)
 
-clientespc %>% ggplot(aes(y=cumM, x=rankM, col=PC1))+ geom_point(alpha=0.1)
+
 
 
