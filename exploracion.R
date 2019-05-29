@@ -137,8 +137,56 @@ tablas
 
 # Esto lo hemos analizado con eclat que sirve únicamente para cosas comunes, sirve para hacer "cestas" o paquetes completos
 
-reglas=apriori(transacciones, parameter=list(support=0.01,confidence=0.4, maxlen=5))
-inspect(reglas)
+# De ahora en adelante lo analizamos con apriori. Buscamos qué productos se 
+reglas=apriori(transacciones, parameter=list(support=0.01,confidence=0.6, maxlen=4, minlen=2))
+
+reglasapriori=inspect(reglas)
+
+reglasapriori[,2]=NULL
+
+reglasapriori= reglasapriori %>% arrange(-lift)
+
+reglasapriori
+
+reglasapriori %>% ggplot(aes(y=lift, x=confidence)) + geom_point(alpha=0.3)
+
+reglasapriori %>% ggplot(aes(x=lift)) + geom_histogram() + xlim(2,5)
+
+
+# Proponemos hacer paquetes con eclat y mandar un correo o carta a cada cliente que no haya comprado el producto Y dado X
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Segmentación de clientes, vamos a intentar segmentar los clientes según su perfil
 
 
 
