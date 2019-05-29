@@ -90,7 +90,7 @@ prod = data %>% group_by(Product_ID,Precio=Purchase) %>% summarize(N=n()) %>%
   ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N) %>% mutate(N=as.factor(N))
 prod
 
-hist(prod$N)
+hist(as.numeric(prod$N))
 
 summary(prod)
 
@@ -115,7 +115,6 @@ transacciones=data %>% select(User_ID, Product_ID) %>% mutate(value=1) %>%
 
 # Lo incluimos en arules
 library(arules)
-reglas=apriori(transacciones, parameter=list(support=0.1,confidence=0.5))
 reglas=eclat(transacciones, parameter=list(support=0.02, minlen=4, target="maximally frequent itemsets", ext=TRUE))
 
 (reglasoporte=inspect(reglas) %>% mutate(IndicePromo=row_number())) # En esta tabla tenemos 4 o más objetos que se han vendido al mismo cliente más de un 10% de clientes
@@ -186,7 +185,28 @@ reglasapriori %>% ggplot(aes(x=lift)) + geom_histogram() + xlim(2,5)
 
 
 
-# Segmentación de clientes, vamos a intentar segmentar los clientes según su perfil
+# Segmentación de clientes, según los productos que han comprado, habrá que hacer un PCA y quedarnos con los 3 primeros.
+pca=prcomp(transacciones)
+#13:53
+pcaresult=as.data.frame(pca$x)
+summary(pcaresult$PC1)
+summary(pcaresult$PC2)
+summary(pcaresult$PC3)
+summary(pcaresult$PC4)
+summary(pcaresult$PC5)
 
+
+
+dataplot=pcaresult %>% select(PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10)
+
+nrow(dataplot)
+
+clientespc=clientes %>% cbind(dataplot)
+
+summary(clientespc)
+
+clientespc %>% ggplot(aes(y=cumF, x=rankF, col=PC1))+ geom_point(alpha=0.1)
+
+clientespc %>% ggplot(aes(y=cumM, x=rankM, col=PC1))+ geom_point(alpha=0.1)
 
 
