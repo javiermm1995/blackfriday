@@ -3,8 +3,8 @@ title: "Estudio de Compras durante el Black Friday"
 author: "Javier Mateo"
 date: "28/5/2019"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}

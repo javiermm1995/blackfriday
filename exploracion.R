@@ -118,25 +118,27 @@ library(arules)
 reglas=apriori(transacciones, parameter=list(support=0.1,confidence=0.5))
 reglas=eclat(transacciones, parameter=list(support=0.02, minlen=4, target="maximally frequent itemsets", ext=TRUE))
 
-tabla=inspect(reglas) %>% arrange(-support)  # En esta tabla tenemos 4 o más objetos que se han vendido al mismo cliente más de un 10% de clientes
+(reglasoporte=inspect(reglas) %>% mutate(IndicePromo=row_number())) # En esta tabla tenemos 4 o más objetos que se han vendido al mismo cliente más de un 10% de clientes
 
 
 
 # Inspeccionamos qué clientes podrían comprar los primeros productos más comunes juntos y no lo han comprado.
 # Generamos una tabla de datos con recomendaciones 
 
-(tablas=inspect(reglas) %>% arrange(-support) %>% select(items) %>% mutate(items=as.character(items)) %>% .$items %>% 
+tablas=reglasoporte %>% select(items) %>% mutate(items=as.character(items)) %>% .$items %>% 
   str_replace_all("[{}]","") %>% as.data.frame() %>% mutate(items=as.character(.)) %>% 
   select(items) %>% separate(items, sep=",", into=as.character(c(1:4))) %>%
   mutate(IndicePromo=row_number()) %>% gather(key=Indicador, value=Producto, 1:4) %>% 
-    select(-Indicador) %>% arrange(IndicePromo))
+    select(-Indicador) %>% arrange(IndicePromo) %>% left_join(reglasoporte, by="IndicePromo") %>%
+  select(-items,-count)
+tablas
+
+# La tabla superior nos dice qué producto participa en qué promoción
+
+# Esto lo hemos analizado con eclat que sirve únicamente para cosas comunes, sirve para hacer "cestas" o paquetes completos
+
+reglas=apriori(transacciones, parameter=list(support=0.01,confidence=0.4, maxlen=5))
+inspect(reglas)
 
 
-# Lo hacemos con left join
-
-
-promoaviso=data %>% select(User_ID,Product_ID) %>% left_join(tablas, by=c("Product_ID"="Producto"))
-summary(promoaviso$IndicePromo)
-
-print("hola")
 
