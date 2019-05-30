@@ -20,7 +20,7 @@ data=data %>% mutate(Gender=as.factor(Gender),
 nulos=function(x)  mean(is.na(x))
 sapply(data, nulos)
 rm(nulos)
-# Vemos que falla la categoria 2 y 3
+# Vemos que falla la categoria 2 y 3, se recomienda utilizar la categoria 1.
 
 # Vamos a intentar entender la jerarquía de estos datos
 jerarquia=data %>% select(Product_Category_1,Product_Category_2,Product_Category_3, Product_ID) %>% 
@@ -34,10 +34,12 @@ jerarquia
 # Hacemos una jerarquia
 library(data.tree)
 library(treemap)
+jerarquia$pathString=paste("Todo",jerarquia$Product_Category_1, jerarquia$Product_Category_2,sep = "/")
 jerarquia$pathString=paste("Todo",jerarquia$Product_Category_1, jerarquia$Product_Category_2,jerarquia$Product_Category_3, sep = "/")
-summary(jerarquia)
+head(jerarquia)
 tree=as.Node(jerarquia[,])
 print(tree)
+plot(tree)
 rm(jerarquia,tree)
 
 # Hacemos una segmentación de clientes RFM. Recency (No disponible), Frequency (nº de productos) y Monetary(sum)
@@ -46,7 +48,7 @@ summary(data)
 
 clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n()) %>% ungroup()
 
-# Tenemos 6000 clientes, les hacemos un scoring de 0 a 10
+# Tenemos 6000 clientes, les hacemos un scoring mediante distintas variables
 
 clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), rankF=rank(F)/length(F)) %>% 
   arrange(rankM) %>% mutate(cumM=cumsum(M)) %>% arrange(rankF) %>% mutate(cumF=cumsum(F))
@@ -61,19 +63,16 @@ clientes %>% ggplot(aes(x=rankF, y=cumM, color=Age))+ geom_point(alpha=0.2) + th
 
 clientes %>% ggplot(aes(x=rankM, y=cumF))+ geom_point(alpha=0.05) + theme_classic()
 
-clientes %>% ggplot(aes(y=M, x=F))+ geom_point(alpha=0.05) + theme_classic()
-
-
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
 
 clientes %>% ggplot(aes(x=M,color=Age)) + geom_density(alpha=0.1, size=1)+ xlim(0,50000) + 
   scale_x_log10() + scale_color_brewer(palette="Spectral") + theme_classic()
 
-clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()+  scale_y_log10()
+clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()
 
-clientes %>% ggplot(aes(y=cumF/max(cumF), x=rankF))+ geom_point(alpha=0.1)
+clientes %>% ggplot(aes(y=cumF/max(cumF), x=rankF))+ geom_line()
 
-clientes %>% ggplot(aes(y=cumM/max(cumM), x=rankM))+ geom_point(alpha=0.1)
+clientes %>% ggplot(aes(y=cumM/max(cumM), x=rankM))+ geom_line()
 
 clientes %>% ggplot(aes(y=cumM, x=rankF))+ geom_point(alpha=0.1)
 
@@ -160,6 +159,9 @@ reglasapriori %>% ggplot(aes(x=lift)) + geom_histogram() + xlim(2,5)
 
 # Proponemos hacer paquetes con eclat y mandar un correo o carta a cada cliente que no haya comprado el producto Y dado X
 
+# Continuamos con el estudio
+
+# Adivinar la edad del cliente en función de sus compras
 
 
 
@@ -211,7 +213,19 @@ clientespc=clientes %>% cbind(dataplot)
 
 summary(clientespc)
 
+matriz=pca$rotation[1:1000,1:1000]
+
+pca$rotation[]
+
+library(corrplot)
+corrplot(matriz)
+
+# Vamos a ver la matriz de rotacion
+
+hist(abs(pca$rotation[,15]))
 
 
+hist(as.vector(pca$rotation))
 
+# El pca no sirve para nada
 
