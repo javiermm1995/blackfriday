@@ -229,3 +229,5 @@ hist(as.vector(pca$rotation))
 
 # El pca no sirve para nada
 
+# Tenemos que hacer la segmentación de otra forma
+
