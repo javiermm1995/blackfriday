@@ -231,3 +231,5 @@ hist(as.vector(pca$rotation))
 
 # Tenemos que hacer la segmentación de otra forma
 
+# Hacemos un knn, vemos que merece la pena 
+
