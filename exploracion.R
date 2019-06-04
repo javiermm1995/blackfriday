@@ -2,6 +2,7 @@
 rm(list=ls())
 library(tidyverse)
 data=read_csv(file="Datos/BlackFriday.csv", col_names=TRUE, )
+head(data)
 summary(data)
 
 # Convertimos caracter a factor
@@ -11,9 +12,11 @@ data=data %>% mutate(Gender=as.factor(Gender),
                 City_Category=as.factor(City_Category), 
                 Product_ID=as.factor(Product_ID), 
                 Age=as.factor(Age),
-                Marital_Status=as.factor(Marital_Status))
+                Marital_Status=as.factor(Marital_Status),
+                IDticket=cumsum(c(1, diff(User_ID) != 0)))
 
-# Comprobamos datos no repetidos, la línea inferior da como resultado TRUE
+summary(data)
+ # Comprobamos datos no repetidos, la línea inferior da como resultado TRUE
 #(nrow(unique(data))==nrow(data))
 
 # Medimos el número de nulos en cada columna
@@ -21,6 +24,15 @@ nulos=function(x)  mean(is.na(x))
 sapply(data, nulos)
 rm(nulos)
 # Vemos que falla la categoria 2 y 3, se recomienda utilizar la categoria 1.
+
+
+
+
+
+
+
+
+
 
 # Vamos a intentar entender la jerarquía de estos datos
 jerarquia=data %>% select(Product_Category_1,Product_Category_2,Product_Category_3, Product_ID) %>% 
@@ -42,20 +54,39 @@ print(tree)
 plot(tree)
 rm(jerarquia,tree)
 
-# Hacemos una segmentación de clientes RFM. Recency (No disponible), Frequency (nº de productos) y Monetary(sum)
+# Hacemos una segmentación de clientes RFM. Recency (No disponible), Frequency (nº de tickets) y Monetary(sum)
+
+
+
 
 summary(data)
 
-clientes=data %>% group_by(User_ID, Age, Gender) %>% summarize(M=sum(Purchase)/100, F=n()) %>% ungroup()
+clientes= data %>% group_by(User_ID, Age, Gender, IDticket, Occupation, City_Category,
+                            Stay_In_Current_City_Years, Marital_Status) %>% 
+  summarize(M=sum(Purchase)/100, F=n()) %>% 
+  group_by(User_ID, Age, Gender, Occupation, City_Category,
+           Stay_In_Current_City_Years, Marital_Status) %>%
+  summarize(M=sum(M), nproductos=sum(F), ntickets=n()) %>% 
+  ungroup() %>%
+  mutate(gastoticket=M/ntickets, gastoproducto=M/nproductos)
+
+summary(clientes)
+dim(clientes)
+
+# M es el gasto total, nproductos el número de productos comprados y ntickets el número de compras que han hecho
 
 # Tenemos 6000 clientes, les hacemos un scoring mediante distintas variables
 
-clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), rankF=rank(F)/length(F)) %>% 
-  arrange(rankM) %>% mutate(cumM=cumsum(M)) %>% arrange(rankF) %>% mutate(cumF=cumsum(F))
+clientes=clientes %>% ungroup() %>% mutate(rankM=rank(M)/length(M), ranknproductos=rank(nproductos)/length(nproductos)) %>% 
+  arrange(rankM) %>% mutate(cumM=cumsum(M)) %>% arrange(ranknproductos) %>% mutate(cumnproductos=cumsum(nproductos))
 
+summary(clientes)
 
 # Hacemos algún plot
-clientes %>% ggplot(aes(y=F, x=M, color=Gender))+ geom_point() + theme_classic()
+clientes %>% ggplot(aes(x=as.factor(ntickets), y=M, color=Gender))+ geom_boxplot()+ scale_y_log10()
+
+clientes %>% ggplot(aes(x=nproductos, y=M, color=Gender))+ geom_point()
+
 
 clientes %>% ggplot(aes(y=rankF, x=rankM))+ geom_point(alpha=0.05) + theme_classic()
 
@@ -76,9 +107,6 @@ clientes %>% ggplot(aes(y=cumM/max(cumM), x=rankM))+ geom_line()
 
 clientes %>% ggplot(aes(y=cumM, x=rankF))+ geom_point(alpha=0.1)
 
-# Continuamos con un análisis preliminar
-
-summary(data)
 
 
 # Cuántos productos compra cada cliente? La moda es 25, la media 91, la mediana 53
@@ -88,6 +116,13 @@ data %>% group_by(User_ID) %>% summarize(N=n()) %>% ggplot(aes(x=N)) + geom_hist
 data %>% group_by(User_ID) %>% summarize(N=n()) %>% ggplot(aes(x=N)) + geom_histogram() + xlim(0,100)
 
 data %>% group_by(User_ID) %>% summarize(N=n()) %>% summary()
+
+
+
+# Continuamos con un análisis preliminar
+
+summary(data)
+
 
 
 # Calculamos los productos que más ventas han tenido
@@ -103,7 +138,7 @@ head(prod)
 
 hist(prod$Ventas)
 
-prod %>% ggplot(aes(x=N, y=Precio)) + geom_boxplot()
+prod %>% ggplot(aes(y=N, x=Precio)) + geom_point()
 
 prod %>% mutate(N=as.numeric(N)) %>% group_by(N) %>% summarize (total=sum(N*Precio)) %>% 
   ungroup() %>% ggplot(aes(y=total, x=N)) + geom_bar(stat="identity") #+ scale_y_log10()
@@ -112,6 +147,7 @@ prod %>% mutate(N=as.numeric(N)) %>% group_by(N) %>% summarize (total=sum(N*Prec
 # Vemos que productos se asocian más a otros productos
 
 # Necesitamos convertir los productos en wide format
+
 data %>% select(Product_ID) %>% distinct() %>% mutate(value=1) %>% summarize(sum(value)) # Tenemos 3623 productos distintos 
 
 # Creamos una matriz de transacciones para utilizar con arules
@@ -231,4 +267,13 @@ hist(as.vector(pca$rotation))
 
 # Tenemos que hacer la segmentación en 3 tipos de clientes. Alto valor, medio valor y bajo valor
 
+plot(as.numeric(data$User_ID))
 
+
+# Intentamos generar un número de ticket considerando el orden
+
+data
+
+data %>% mutate(index=cumsum(c(1, diff(User_ID) != 0))) %>% select(User_ID,index)
+
+                
