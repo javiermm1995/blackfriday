@@ -229,7 +229,6 @@ hist(as.vector(pca$rotation))
 
 # El pca no sirve para nada
 
-# Tenemos que hacer la segmentación de otra forma
+# Tenemos que hacer la segmentación en 3 tipos de clientes. Alto valor, medio valor y bajo valor
 
-# Hacemos un knn, vemos que merece la pena 
 
