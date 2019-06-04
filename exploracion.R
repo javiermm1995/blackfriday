@@ -87,12 +87,11 @@ clientes %>% ggplot(aes(x=as.factor(ntickets), y=M, color=Gender))+ geom_boxplot
 
 clientes %>% ggplot(aes(x=nproductos, y=M, color=Gender))+ geom_point()
 
+clientes %>% ggplot(aes(y=ranknproductos, x=rankM))+ geom_point(alpha=0.05) + theme_classic()
 
-clientes %>% ggplot(aes(y=rankF, x=rankM))+ geom_point(alpha=0.05) + theme_classic()
+clientes %>% ggplot(aes(x=ranknproductos, y=cumM, color=Age))+ geom_point(alpha=0.2) + theme_classic()
 
-clientes %>% ggplot(aes(x=rankF, y=cumM, color=Age))+ geom_point(alpha=0.2) + theme_classic()
-
-clientes %>% ggplot(aes(x=rankM, y=cumF))+ geom_point(alpha=0.05) + theme_classic()
+clientes %>% ggplot(aes(x=rankM, y=cumnproductos))+ geom_point(alpha=0.05) + theme_classic()
 
 clientes %>% ggplot(aes(x=M, fill=Gender ,color=Gender)) + geom_density(alpha=0.3)+ xlim(0,50000) + scale_x_log10() 
 
@@ -101,11 +100,11 @@ clientes %>% ggplot(aes(x=M,color=Age)) + geom_density(alpha=0.1, size=1)+ xlim(
 
 clientes %>% ggplot(aes(x=Age,y=M, color=Age)) + geom_boxplot() +theme_classic()
 
-clientes %>% ggplot(aes(y=cumF/max(cumF), x=rankF))+ geom_line()
+clientes %>% ggplot(aes(y=cumnproductos/max(cumnproductos), x=ranknproductos))+ geom_line()
 
 clientes %>% ggplot(aes(y=cumM/max(cumM), x=rankM))+ geom_line()
 
-clientes %>% ggplot(aes(y=cumM, x=rankF))+ geom_point(alpha=0.1)
+clientes %>% ggplot(aes(y=cumM, x=ranknproductos))+ geom_point(alpha=0.1)
 
 
 
@@ -127,11 +126,12 @@ summary(data)
 
 # Calculamos los productos que más ventas han tenido
 prod = data %>% group_by(Product_ID,Precio=Purchase) %>% summarize(N=n()) %>% 
-  ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N) %>% mutate(N=as.factor(N), redondeoprecio=round(Precio, digits=-4))
+  ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N)
 
 prod
+as.factor(cut(prod$Precio,8))
 
-summary(as.factor(prod$redondeoprecio))
+summary(prod)
 
 hist(as.numeric(prod$N))
 
@@ -141,10 +141,16 @@ head(prod)
 
 hist(prod$Ventas)
 
-prod %>% ggplot( aes(y=N, x=as.factor(redondeoprecio))) + geom_boxplot()# es necesario discretizar precio y hacer boxplot
+prod %>% ggplot(aes(y=Ventas, x=redondeoprecio)) + geom_boxplot()# es necesario discretizar precio y hacer boxplot
 
 prod %>% mutate(N=as.numeric(N)) %>% group_by(N) %>% summarize (total=sum(N*Precio)) %>% 
   ungroup() %>% ggplot(aes(y=total, x=N)) + geom_bar(stat="identity") #+ scale_y_log10()
+
+prod %>% arrange(Precio) %>% mutate(beneficio=cumsum(Ventas)) %>% 
+  ggplot(aes(y=beneficio, x=Precio))+ geom_line()
+# Más o menos todos los productos generan un beneficio aproximado
+
+
 # A pesar de que cada usuario compra aproximadamente 25 cosas, 
 
 # Vemos que productos se asocian más a otros productos
@@ -198,9 +204,6 @@ reglasapriori %>% ggplot(aes(x=lift)) + geom_histogram() + xlim(2,5)
 
 # Proponemos hacer paquetes con eclat y mandar un correo o carta a cada cliente que no haya comprado el producto Y dado X
 
-# Continuamos con el estudio
-
-# Adivinar la edad del cliente en función de sus compras
 
 
 
