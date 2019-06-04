@@ -127,8 +127,11 @@ summary(data)
 
 # Calculamos los productos que más ventas han tenido
 prod = data %>% group_by(Product_ID,Precio=Purchase) %>% summarize(N=n()) %>% 
-  ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N) %>% mutate(N=as.factor(N))
+  ungroup()  %>% mutate(Ventas=Precio*N) %>% arrange(N) %>% mutate(N=as.factor(N), redondeoprecio=round(Precio, digits=-4))
+
 prod
+
+summary(as.factor(prod$redondeoprecio))
 
 hist(as.numeric(prod$N))
 
@@ -138,7 +141,7 @@ head(prod)
 
 hist(prod$Ventas)
 
-prod %>% ggplot(aes(y=N, x=Precio)) + geom_point()
+prod %>% ggplot( aes(y=N, x=as.factor(redondeoprecio))) + geom_boxplot()# es necesario discretizar precio y hacer boxplot
 
 prod %>% mutate(N=as.numeric(N)) %>% group_by(N) %>% summarize (total=sum(N*Precio)) %>% 
   ungroup() %>% ggplot(aes(y=total, x=N)) + geom_bar(stat="identity") #+ scale_y_log10()
