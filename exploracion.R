@@ -276,10 +276,14 @@ hist(as.vector(pca$rotation))
 plot(as.numeric(data$User_ID))
 
 
-# Intentamos generar un número de ticket considerando el orden
+# Hacemos una segmentación RFM
 
-data
 
-data %>% mutate(index=cumsum(c(1, diff(User_ID) != 0))) %>% select(User_ID,index)
+
+
+
+
+
+# Estudiamos otras variables como tipo de ciudad y cosas asi
 
                 
